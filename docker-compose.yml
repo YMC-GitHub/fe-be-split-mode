@@ -20,6 +20,26 @@ php-fpm:
     - /etc/localtime:/etc/localtime
   links:
     - mysql:mysql
+#nodejs as be (ssr)
+#nodejs:
+#  build: ./nodejs
+#  ports:
+#    - "3001:3001"
+#  volumes:
+#    - ./app:/usr/share/nginx/html
+#    - /etc/localtime:/etc/localtime
+#  links:
+#    - mongo:mongo
+#    - mysql:mysql
+#nodejs as fe(csr/ssr)
+nodejs:
+  build: ./nodejs
+  ports:
+    - "3000:3000"
+  volumes:
+    - ./app:/usr/share/nginx/html
+    - /etc/localtime:/etc/localtime
+
 nginx:
   build: ./nginx
   ports:
@@ -35,3 +55,5 @@ nginx:
     - /etc/localtime:/etc/localtime
   links:
     - php-fpm:__DOCKER_PHP_FPM__
+    - nodejs:__DOCKER_FE_NODEJS__
+    #- be_nodejs:__DOCKER_BE_NODEJS__
