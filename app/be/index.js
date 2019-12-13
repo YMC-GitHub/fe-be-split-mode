@@ -36,8 +36,8 @@ server.on("request", function (req, res) {
   res.writeHead(200, {
     "content-type": "text/plain"
   });
-  res.write(`hello nodejs!i am fe with nodejs !now is: ${now}`);
+  res.write(`hello nodejs!i am be with nodejs! now is: ${now}`);
   res.end();
   now = null;
 });
-server.listen(3000);
+server.listen(3001);

@@ -8,18 +8,17 @@ mysql:
     - /etc/localtime:/etc/localtime
   environment:
     - MYSQL_ROOT_PASSWORD=your_mysql_password
-php-fpm:
-  build: ./php-fpm
+#nodejs as be
+be_nodejs:
+  build: ./be_nodejs
   ports:
-    - "9000:9000"
+    - "3001:3001"
   volumes:
     - ./app:/usr/share/nginx/html
-    - ./php-fpm/php.ini-production:/usr/local/etc/php/php.ini:ro
-    - ./php-fpm/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
-    - ./php-fpm/php-fpm.d:/usr/local/etc/php-fpm.d:ro
     - /etc/localtime:/etc/localtime
   links:
     - mysql:mysql
+#nodejs as fe(csr/ssr)
 nodejs:
   build: ./nodejs
   ports:
@@ -27,3 +26,19 @@ nodejs:
   volumes:
     - ./app:/usr/share/nginx/html
     - /etc/localtime:/etc/localtime
+nginx:
+  build: ./nginx
+  ports:
+    - "80:80"
+    - "443:443"
+    - "8080:80"
+  volumes:
+    - ./app:/usr/share/nginx/html
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+    - ./nginx/ca/server.crt/:/etc/nginx/server.crt:ro
+    - ./nginx/ca/server.key/:/etc/nginx/server.key:ro
+    - /etc/localtime:/etc/localtime
+  links:
+    - be_nodejs:__DOCKER_BE_NODEJS__
+    - nodejs:__DOCKER_FE_NODEJS__
