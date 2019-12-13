@@ -1,85 +1,41 @@
-version: '2'
-services:
-  mysql:
-    hostname: mysql
-    container_name: mysql-10.3.15-alpine
-    build: ./mysql
-    ports:
-      - 3308:3306
-    networks:
-      staticnymc:
-        ipv4_address: 172.20.1.3
-    environment:
-      MYSQL_ROOT_PASSWORD: yourpassword
-      TZ: Asia/Shanghai
-      LANG: en_US.UTF-8
-    volumes:
-      - ./mysql/my.cnf:/etc/mysql/my.cnf
-      - ./mysql/data:/app/mysql
-      - ./mysql/backup:/backup
-      - /etc/localtime:/etc/localtime
-    restart: always
-  tomcat:
-    hostname: tomcat
-    container_name: tomcat-8.5.41-alpine
-    depends_on:
-      - mysql
-    build: ./tomcat
-    ports:
-      - 8080:8080
-    networks:
-      staticnymc:
-        ipv4_address: 172.20.1.2
-    volumes:
-      - ./tomcat/conf:/usr/local/tomcat/conf
-      - ./tomcat/logs:/usr/local/tomcat/logs
-      - /etc/localtime:/etc/localtime
-      - ./app/be/webapps:/usr/local/tomcat/webapps
-    environment:
-      JAVA_OPTS: -Dfile.encoding=UTF-8
-      TZ: Asia/Shanghai
-      LANG: en_US.UTF-8
-    restart: always
-  nodejs:
-    hostname: nodejs
-    container_name: nodejs-10.17.0-alpine
-    build: ./nodejs
-    ports:
-      - 3000:3000
-    networks:
-      staticnymc:
-        ipv4_address: 172.20.1.7
-    volumes:
-      - ./app:/usr/share/nginx/html
-      - /etc/localtime:/etc/localtime
-    restart: always
-    links:
-      - mysql:mysql
-  nginx:
-    hostname: nginx
-    container_name: nginx-1.17-alpine
-    build: ./nginx
-    ports:
-      - 80:80
-      - 443:443
-      - 8081:80
-    networks:
-      staticnymc:
-        ipv4_address: 172.20.1.8
-    volumes:
-      - ./app:/usr/share/nginx/html
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
-      - ./nginx/ca/server.crt/:/etc/nginx/server.crt:ro
-      - ./nginx/ca/server.key/:/etc/nginx/server.key:ro
-      - /etc/localtime:/etc/localtime
-    restart: always
-    links:
-    - tomcat:__DOCKER_TOMCAT__
+mongo:
+  build: ./mongo
+  ports:
+    - "27017:27017"
+  volumes:
+    - ./mongo/data:/data/db/mongo
+    - /etc/localtime:/etc/localtime
+#nodejs as be
+be_nodejs:
+  build: ./be_nodejs
+  ports:
+    - "3001:3001"
+  volumes:
+    - ./app:/usr/share/nginx/html
+    - /etc/localtime:/etc/localtime
+  links:
+    - mongo:mongo
+#nodejs as fe(csr/ssr)
+nodejs:
+  build: ./nodejs
+  ports:
+    - "3000:3000"
+  volumes:
+    - ./app:/usr/share/nginx/html
+    - /etc/localtime:/etc/localtime
+nginx:
+  build: ./nginx
+  ports:
+    - "80:80"
+    - "443:443"
+    - "8080:80"
+  volumes:
+    - ./app:/usr/share/nginx/html
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+    - ./nginx/ca/server.crt/:/etc/nginx/server.crt:ro
+    - ./nginx/ca/server.key/:/etc/nginx/server.key:ro
+    - /etc/localtime:/etc/localtime
+  links:
+    - be_nodejs:__DOCKER_BE_NODEJS__
     - nodejs:__DOCKER_FE_NODEJS__
-networks:
-  staticnymc:
-    ipam:
-      config:
-        - subnet: 172.20.1.0/24
-          gateway: 172.20.1.1
