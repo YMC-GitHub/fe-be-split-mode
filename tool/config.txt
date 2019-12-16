@@ -1,0 +1,52 @@
+#PM.dir.php-fpm
+php-fpm
+#env.php-fpm
+- APP_KEY=
+- DB_HOST=
+- DB_DATABASE=
+- DB_USERNAME=
+- DB_PASSWORD=
+#build.php-fpm
+./php-fpm
+#PM.dir.nginx
+nginx
+#port.app
+app
+#volume.nginx
+- ./app/src:/usr/share/nginx/html
+- ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+- ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+- ./nginx/ca/server.crt/:/etc/nginx/server.crt:ro
+- ./nginx/ca/server.key/:/etc/nginx/server.key:ro
+#env.nginx
+- "443:443"
+- "80:80"
+#CM.nginx
+nginx
+#image.nginx
+nginx:latest
+#image.mysql
+mysql:latest
+#port.php-fpm
+"9000"
+#CM.mysql
+mysql
+#PM.dir.mysql
+mysql
+#link.php-fpm
+mysql:mysql
+#env.mysql
+MYSQL_ROOT_PASSWORD
+#volume.mysql
+./mysql:/var/lib/mysql
+#volume.php-fpm
+- ./app/src:/usr/share/nginx/html
+- ./php-fpm/php.ini-production:/usr/local/etc/php/php.ini:ro
+#link.nginx
+php-fpm:__DOCKER_PHP_FPM__
+#PM.dir.app
+app
+#CM.php-fpm
+php-fpm
+#port.mysql
+"3306:3306"
